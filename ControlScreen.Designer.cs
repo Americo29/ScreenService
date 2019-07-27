@@ -28,14 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.stLapso = new System.Timers.Timer();
+            this.spSensor = new System.IO.Ports.SerialPort(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.stLapso)).BeginInit();
             // 
             // stLapso
             // 
             this.stLapso.Enabled = true;
-            this.stLapso.Interval = 5000D;
             this.stLapso.Elapsed += new System.Timers.ElapsedEventHandler(this.StLapso_Elapsed);
+            // 
+            // spSensor
+            // 
+            this.spSensor.BaudRate = 115200;
+            this.spSensor.PortName = "COM6";
+            this.spSensor.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.SpSensor_DataReceived);
             // 
             // ControlScreen
             // 
@@ -47,5 +54,6 @@
         #endregion
 
         private System.Timers.Timer stLapso;
+        private System.IO.Ports.SerialPort spSensor;
     }
 }

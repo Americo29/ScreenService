@@ -13,12 +13,19 @@ using System.Threading.Tasks;
 using WindowsInput.Native;
 using WindowsInput;
 using System.Windows.Forms;
+using System.IO.Ports;
 
 namespace ScreenService
 {
     partial class ControlScreen : ServiceBase
     {
         bool blStateService = false;
+        bool IfDataInPort = false;
+        bool Ifcnt100 = false;
+
+        int cntTimer = 0;
+
+        string inData = "0";
 
         private int SC_MONITORPOWER = 0xF170;
 
@@ -38,13 +45,15 @@ namespace ScreenService
 
         public ControlScreen()
         {
-            InitializeComponent();          
+            InitializeComponent();
+            spSensor.Open();
         }
 
         protected override void OnStart(string[] args)
         {
             // TODO: agregar código aquí para iniciar el servicio.
             stLapso.Start();
+            
             EventLog.WriteEntry("inicio del servicio", EventLogEntryType.Information);
         }
 
@@ -52,30 +61,52 @@ namespace ScreenService
         {
             // TODO: agregar código aquí para realizar cualquier anulación necesaria para detener el servicio.
             stLapso.Stop();
-            EventLog.WriteEntry("stop servicio", EventLogEntryType.Information);
+            spSensor.Close();
+            EventLog.WriteEntry("parada del servicio", EventLogEntryType.Information);
         }
 
         private void StLapso_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-           // if (blStateService) return;                 
-            if(blStateService == false)
+            cntTimer++;
+            if(cntTimer==100)
             {
-                try
+                Ifcnt100 = true;
+            }
+
+            if(Ifcnt100)
+            {
+                if (blStateService == false)
                 {
-                    SetMonitorState(MonitorState.OFF);
-                    blStateService = true;  
+                    try
+                    {
+                        EventLog.WriteEntry("monitor OFF", EventLogEntryType.Information);
+                        SetMonitorState(MonitorState.OFF);
+                        blStateService = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        EventLog.WriteEntry(ex.Message, EventLogEntryType.Error);
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    EventLog.WriteEntry(ex.Message, EventLogEntryType.Error);
+                    if (IfDataInPort)
+                    {
+                        if (Convert.ToInt32(inData) < 150)
+                        {
+                            EventLog.WriteEntry("monitor ON", EventLogEntryType.Information);
+                            SetMonitorState(MonitorState.ON);
+                            MouseWake();
+                            IfDataInPort = false;
+
+                        }
+                    }
                 }
             }
-            else
-            {
-                SetMonitorState(MonitorState.ON);
-                MouseWake();
-            }
+                         
+                
         }
+
         public void MouseWake()
         {
             mouse_event(MOUSEEVENTF_MOVE, 0, 1, 0, 0);
@@ -94,6 +125,14 @@ namespace ScreenService
             Form frm = new Form();
             SendMessage(frm.Handle, WM_SYSCOMMAND, (IntPtr)SC_MONITORPOWER, (IntPtr)state);
 
-        }          
+        }
+
+        private void SpSensor_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            SerialPort sp = (SerialPort)sender;
+            inData = sp.ReadExisting();
+            IfDataInPort = true;
+            EventLog.WriteEntry(inData, EventLogEntryType.Information);
+        }
     }
 }

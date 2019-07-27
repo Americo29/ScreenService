@@ -14,8 +14,7 @@ namespace ScreenService
         /// </summary>
         static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            ServiceBase[] ServicesToRun;           ServicesToRun = new ServiceBase[]
             {
                 new ControlScreen()
             };
