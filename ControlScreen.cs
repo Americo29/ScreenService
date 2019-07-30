@@ -27,6 +27,8 @@ namespace ScreenService
 
         string inData = "0";
 
+        string[] ports;
+
         private int SC_MONITORPOWER = 0xF170;
 
         private uint WM_SYSCOMMAND = 0x0112;
@@ -46,14 +48,16 @@ namespace ScreenService
         public ControlScreen()
         {
             InitializeComponent();
+            ports = SerialPort.GetPortNames();
+            spSensor.PortName = ports[0];
+            Thread.Sleep(5);
             spSensor.Open();
         }
 
         protected override void OnStart(string[] args)
         {
             // TODO: agregar código aquí para iniciar el servicio.
-            stLapso.Start();
-            
+            stLapso.Start();           
             EventLog.WriteEntry("inicio del servicio", EventLogEntryType.Information);
         }
 
@@ -94,7 +98,7 @@ namespace ScreenService
                     {
                         if (Convert.ToInt32(inData) < 150)
                         {
-                            EventLog.WriteEntry("monitor ON", EventLogEntryType.Information);
+                           // EventLog.WriteEntry("monitor ON", EventLogEntryType.Information);
                             SetMonitorState(MonitorState.ON);
                             MouseWake();
                             IfDataInPort = false;
@@ -132,7 +136,7 @@ namespace ScreenService
             SerialPort sp = (SerialPort)sender;
             inData = sp.ReadExisting();
             IfDataInPort = true;
-            EventLog.WriteEntry(inData, EventLogEntryType.Information);
+           // EventLog.WriteEntry(inData, EventLogEntryType.Information);
         }
     }
 }
