@@ -50,14 +50,19 @@ namespace ScreenService
             InitializeComponent();
             try
             {
-                ports = SerialPort.GetPortNames();
-                spSensor.PortName = ports[0];
-                Thread.Sleep(5);
-                spSensor.Open();
+                if(SerialPort.GetPortNames() != null)
+                {
+                    ports = SerialPort.GetPortNames();
+                    spSensor.PortName = ports[0];
+                    Thread.Sleep(5);
+                    spSensor.Open();
+                    EventLog.WriteEntry("Servicio iniciado", EventLogEntryType.Information);
+                }
+
             }
             catch (Exception ex)
             {
-                EventLog.WriteEntry(ex.Message, EventLogEntryType.Error);
+                EventLog.WriteEntry("Error de Inicio: "+ex.Message, EventLogEntryType.Error);
                 OnStop();
             }
 
@@ -75,7 +80,7 @@ namespace ScreenService
             // TODO: agregar código aquí para realizar cualquier anulación necesaria para detener el servicio.
             stLapso.Stop();
             spSensor.Close();
-            EventLog.WriteEntry("parada del servicio", EventLogEntryType.Information);
+            EventLog.WriteEntry("Servicio detenido", EventLogEntryType.Information);
         }
 
         private void StLapso_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -92,7 +97,7 @@ namespace ScreenService
                 {
                     try
                     {
-                        EventLog.WriteEntry("monitor OFF", EventLogEntryType.Information);
+                        //EventLog.WriteEntry("monitor OFF", EventLogEntryType.Information);
                         SetMonitorState(MonitorState.OFF);
                         blStateService = true;
                     }
