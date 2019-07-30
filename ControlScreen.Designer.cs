@@ -41,7 +41,7 @@
             // spSensor
             // 
             this.spSensor.BaudRate = 115200;
-            this.spSensor.PortName = "COM6";
+            //this.spSensor.PortName = "COM1";
             this.spSensor.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.SpSensor_DataReceived);
             // 
             // ControlScreen
