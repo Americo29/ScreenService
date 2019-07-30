@@ -27,7 +27,7 @@ namespace ScreenService
 
         string inData = "0";
 
-        string[] ports;
+        private string[] ports;
 
         private int SC_MONITORPOWER = 0xF170;
 
@@ -48,10 +48,19 @@ namespace ScreenService
         public ControlScreen()
         {
             InitializeComponent();
-            ports = SerialPort.GetPortNames();
-            spSensor.PortName = ports[0];
-            Thread.Sleep(5);
-            spSensor.Open();
+            try
+            {
+                ports = SerialPort.GetPortNames();
+                spSensor.PortName = ports[0];
+                Thread.Sleep(5);
+                spSensor.Open();
+            }
+            catch (Exception ex)
+            {
+                EventLog.WriteEntry(ex.Message, EventLogEntryType.Error);
+                OnStop();
+            }
+
         }
 
         protected override void OnStart(string[] args)
@@ -106,9 +115,7 @@ namespace ScreenService
                         }
                     }
                 }
-            }
-                         
-                
+            }                                
         }
 
         public void MouseWake()
